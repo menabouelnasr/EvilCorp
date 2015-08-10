@@ -18,7 +18,7 @@ import java.util.TreeMap;
 
 public class EvilCorp 
 {
-
+	
 	public static void main(String[] args) 
 	{
 		DecimalFormat format = new DecimalFormat("$#,##0.00;$-#,##0.00");
@@ -35,9 +35,7 @@ public class EvilCorp
 		ArrayList<String> tTypes = new ArrayList<String>();
 		ArrayList<Double> amount = new ArrayList<Double>();
 		ArrayList<Integer> charges = new ArrayList<Integer>();
-	
-		Map<Long,String> typeMap = new TreeMap<Long,String>(type);
-		
+			
 		System.out.println("Welcome to Evil Corp Savings and Loan. Please create the user account(s).");
 	
 	while(start.equalsIgnoreCase("Y"))

@@ -95,14 +95,11 @@ public class EvilCorpApp
 			}while(promptAmount==false);
 			
 			if(trans.equalsIgnoreCase("DP"))
-			{
 				finAmount=transAmount;
-			}
 			else
-			{
 				finAmount=-transAmount;
-			}
-			System.out.println("Enter the transaction date: ");
+	
+			System.out.println("Enter the transaction date: (MM/DD/YYYY ");
 			date=keyboard.next();
 			account.setDate(date);
 						

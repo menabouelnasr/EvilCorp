@@ -73,7 +73,7 @@ public class Validator
 	    boolean isValid = false;
 	    while (isValid == false)
 	    {
-	    	if (prompt<0.0)
+	    	if (prompt<=0.0)
 	    	{
 	            System.out.println("Please enter a transaction amount that is greater than $0.00.");
 	            break;

@@ -12,7 +12,7 @@ public class EvilCorpTest
 	      System.out.println("Test if pricePerMonth returns Dollars...") ;
 	      EvilCorp S = new EvilCorp() ;
 	      
-	      assertTrue(S.getDate()==null) ; //it fails because 200/2=100 not 1.0
+	      assertTrue(S.getDate()==null) ; 
 	   }
 
 }

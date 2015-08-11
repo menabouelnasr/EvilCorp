@@ -1,0 +1,3 @@
+Account Name: sam     Account Number: 96      Balance: $5.0
+Account Name: tom     Account Number: 10      Balance: $90.0
+Account Name: bob     Account Number: 15      Balance: $190.0

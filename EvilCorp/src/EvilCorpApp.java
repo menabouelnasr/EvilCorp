@@ -71,7 +71,7 @@ public class EvilCorpApp
 		System.out.println("Please enter the name of your account: ");
 		accName=keyboard.next();
 		promptName= Validator.getAccName(accName); //validates name input
-		while(promptNum==false);
+		}while(promptNum==false);
 		
 		do{
 		System.out.println("Please enter your account balance: "); 

@@ -53,14 +53,16 @@ public class Validator
 	    boolean isValid = false;
 	    while (isValid == false)
 	    {
-		    if (prompt.equalsIgnoreCase("c") || prompt.equalsIgnoreCase("dp") || prompt.equalsIgnoreCase("w") || prompt.equalsIgnoreCase("d") || prompt.equalsIgnoreCase("dc"))
+		    if (prompt.equalsIgnoreCase("c") || prompt.equalsIgnoreCase("dp") || prompt.equalsIgnoreCase("w") || prompt.equalsIgnoreCase("d")|| prompt.equalsIgnoreCase("dc"))
 		    {
 		    	isValid = true;
 		    }
 	        else
 	        {
+	  
 	        	System.out.println("Error! Invalid Transaction Type. Try again.");
 	        	break;
+	        	
 	        }
 	       
 	    }

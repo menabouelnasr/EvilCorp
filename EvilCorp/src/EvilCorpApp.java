@@ -51,7 +51,7 @@ public class EvilCorpApp
 		System.out.println((System.getProperty("user.dir") + File.separatorChar +"myEC.txt"));
 		String filename = (System.getProperty("user.dir") + File.separatorChar +"myEC.txt");
 		
-		System.out.println(Paths.get("c:\\myfolder\\myEC.txt"));
+		//System.out.println(Paths.get("c:\\myfolder\\myEC.txt"));
 		PrintWriter writer = new PrintWriter(new File(filename));
 		FileWriter fstream  = new FileWriter("myEC.txt"); ; 
 		BufferedWriter out = new BufferedWriter(fstream); 	
@@ -79,11 +79,16 @@ public class EvilCorpApp
 		promptBal= Validator.getBal(bal); //validates balance input
 		}while(promptBal==false);
 		
+		outerloop:
 		while(choice.equalsIgnoreCase("Y"))
 		{
 			do{
 			System.out.println("Enter a transaction type related to this account( C= Check, DC= Debit card, DP= Deposit or W= Withdrawal) or -1 to finish");
 			trans=keyboard.next();
+			if(trans.equalsIgnoreCase("-1"))
+			{
+				break outerloop;
+			}
 			promptTrans= Validator.getTrans(trans); //validates transaction type input
 			}while(promptTrans==false);
 			
@@ -99,7 +104,7 @@ public class EvilCorpApp
 			else
 				finAmount=-transAmount;
 	
-			System.out.println("Enter the transaction date: (MM/DD/YYYY ");
+			System.out.println("Enter the transaction date: (MM/DD/YYYY)");
 			date=keyboard.next();
 			account.setDate(date);
 						
@@ -142,7 +147,8 @@ public class EvilCorpApp
 			close= keyboard.next();
 			if(close.equalsIgnoreCase("y"))
 			{
-				myMap.remove(accNum);
+				myFile.remove(accNum);
+				System.out.println(myFile);
 				System.out.println("Account number "+ accNum + " has been closed. Thank you for your business!");
 			}
 			else
@@ -151,8 +157,11 @@ public class EvilCorpApp
 				myAccNames.put(accNum, accName);
 			}
 		}
-		writer.println(myFile.put(accNum, (bal+sum))); //writes to the file everytime, overriding an account if it is present
-		myAccNames.put(accNum, accName);
+		else
+		{
+			writer.println(myFile.put(accNum, (bal+sum))); //writes to the file everytime, overriding an account if it is present
+			myAccNames.put(accNum, accName);
+		}
 		
 		System.out.println("\nYour starting balance is: "+ format.format(bal) + "\n");
 		System.out.println("Transaction Type   Date of Transaction    Transaction Amount  Additional Charges");

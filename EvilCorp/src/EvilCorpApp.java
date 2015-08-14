@@ -6,6 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -19,196 +24,148 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+
 
 public class EvilCorpApp
 {
 	
-	public static void main(String[] args) throws IOException 
+	public static void main(String[] args) throws IOException, SQLException 
 	{
-		DecimalFormat format = new DecimalFormat("$#,##0.00;$-#,##0.00");
-		DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
 		Scanner keyboard= new Scanner(System.in);
-		HashMap<Long,Double> myMap = new HashMap<Long,Double>();
-		HashMap <Long, String> type = new HashMap<Long, String>();
-		HashMap<Integer,Double> myFile = new HashMap<Integer,Double>();
-		HashMap<Integer,String> myAccNames = new HashMap<Integer,String>();
-		
-		int accNum = 0, d, m, y, i;
-		double bal = 0, transAmount, finAmount=0;
-		long time, sum=0;
-		boolean promptNum, promptName, promptBal, promptTrans, promptAmount;
-		String accName, trans, date, month, day, year, choice="y", start="y", close="n";
-		ArrayList<Long> tMS = new ArrayList<Long>();
-		ArrayList<String> tTypes = new ArrayList<String>();
+		int accNum = 0, i;
+		double bal = 0, transAmount, finAmount=0, trans_bal=0, finalBal=0;
+		boolean promptNum, promptName, promptBal, promptAmount;
+		String bday, date;
+		String accName, choice="y", start="y", close="n", remove;
+		int trans;
+
 		ArrayList<Double> amount = new ArrayList<Double>();
-		ArrayList<Integer> charges = new ArrayList<Integer>();
-		
-		EvilCorp account = new EvilCorp();
-		
-		System.out.println((System.getProperty("user.dir") + File.separatorChar +"myEC.txt"));
-		String filename = (System.getProperty("user.dir") + File.separatorChar +"myEC.txt");
-		
-		//System.out.println(Paths.get("c:\\myfolder\\myEC.txt"));
-		PrintWriter writer = new PrintWriter(new File(filename));
-		FileWriter fstream  = new FileWriter("myEC.txt"); ; 
-		BufferedWriter out = new BufferedWriter(fstream); 	
-		
+
+		Database evil = new Database();
+		Database.openConnection();
 		System.out.println("\nWelcome to Evil Corp Savings and Loan. Please create the user account(s).");
 	
 	while(start.equalsIgnoreCase("Y"))
 	{
+		//if statement to check for acc # in DB
 		
 		do{
 			System.out.println("Please enter your account #: "); 
 			accNum= keyboard.nextInt();
 			promptNum= Validator.getAccNum(accNum); //validates account number input
+			evil.setCheck_Acc(accNum);
 		}while(promptNum==false);
 		
-		do{
-		System.out.println("Please enter the name of your account: ");
-		accName=keyboard.next();
-		promptName= Validator.getAccName(accName); //validates name input
-		}while(promptNum==false);
+		if(evil.getCheck_Acc()>0)
+		{
+			System.out.println("Account is available");
+		}
+		else
+		{
+			System.out.println("Account number unavailable, insert new account.");
+			
+			Random r = new Random();
+			int x = 100 + r.nextInt(999);
+			
+			accNum= x;
+			System.out.println("Your new account number is: " + accNum);
+			
+			do{
+			System.out.println("Please enter the name of your account: ");
+			accName=keyboard.next();
+			promptName= Validator.getAccName(accName); //validates name input
+			}while(promptNum==false);
+			
+			//check acc # with DB table, if it exists, complete transactions and update table
+			
+			do{
+			System.out.println("Please enter your account balance: "); 
+			bal=keyboard.nextDouble();
+			promptBal= Validator.getBal(bal); //validates balance input
+			}while(promptBal==false);
+			
+			
+			System.out.println("Please enter your birthdate (MM/DD/YYYY): "); 
+			bday=keyboard.next();
+			//promptBal= Validator.getBal(bal); //validates balance input
+			
+			evil.setAdd_Acc(accNum, accName, bal, bday);
+		}
 		
-		do{
-		System.out.println("Please enter your account balance: "); 
-		bal=keyboard.nextDouble();
-		promptBal= Validator.getBal(bal); //validates balance input
-		}while(promptBal==false);
 		
 		outerloop:
 		while(choice.equalsIgnoreCase("Y"))
 		{
-			do{
-			System.out.println("Enter a transaction type related to this account( C= Check, DC= Debit card, DP= Deposit or W= Withdrawal) or -1 to finish");
-			trans=keyboard.next();
-			if(trans.equalsIgnoreCase("-1"))
+			//do{
+				//change trans types to 1 - Deposit, 2 - Check, 3 - Withdrawal, 4 - Debit Card
+			System.out.println("Enter a transaction type related to this account(1 - Deposit, 2 - Check, 3 - Withdrawal, 4 - Debit Card) or -1 to finish");
+			trans=keyboard.nextInt();
+			if(trans==-1)
 			{
 				break outerloop;
 			}
-			promptTrans= Validator.getTrans(trans); //validates transaction type input
-			}while(promptTrans==false);
+			//promptTrans= Validator.getTrans(trans); //validates transaction type input
+			//}while(promptTrans==false);
 			
 			do{
 			System.out.println("Enter the transaction amount:");
 			transAmount=keyboard.nextDouble();
 			promptAmount= Validator.getAmount(transAmount); //validates transaction amount input
-			account.setTrans(transAmount);
 			}while(promptAmount==false);
 			
-			if(trans.equalsIgnoreCase("DP"))
+			if(trans==1)
 				finAmount=transAmount;
 			else
 				finAmount=-transAmount;
-	
+			
 			System.out.println("Enter the transaction date: (MM/DD/YYYY)");
 			date=keyboard.next();
-			account.setDate(date);
-						
-			time= Long.parseLong(account.getDate());
+			evil.setAdd_Trans(accNum, finAmount, trans, date, 0);
 			
-			while(myMap.containsKey(time))
-			{
-				time++;
-			}
-			myMap.put(time, finAmount); //adds time and transaction amount to the hashmap
-			
-			type.put(time, trans); //associates time with transaction type
-			tMS.add(time); //adds time to array
-			Collections.sort(tMS); //sorts the array by date
 			
 			System.out.println("Would you like to enter another transaction? (Y/N) ");
 			choice= keyboard.next();
+			amount.add(finAmount);
 		}
-		
-		for(i=0; i< myMap.size() ; i++)
-		{
-			sum+=myMap.get(tMS.get(i));
-			tTypes.add(type.get(tMS.get(i)));
+			for(i=0; i<amount.size(); i++)
+			{
+				 trans_bal +=amount.get(i);
+			}
+			evil.setUpdate_Acc(accNum,trans_bal);
 			
-			if ((bal+sum <0))
-			{
-				sum-=35;//adds a 35 dollar charge each time a withdrawal occurs when the balance is below 0
-				charges.add(-35);
-			}
-			else
-			{
-				charges.add(0);
-			}
 			
-		}
-		
-		if((bal+sum)==0) //asks user if they want to close their account when the balance is 0
-		{
-			System.out.println("Your current account balance is $0.00. Would you like to close this account? (Y/N)");
-			close= keyboard.next();
-			if(close.equalsIgnoreCase("y"))
-			{
-				myFile.remove(accNum);
-				System.out.println(myFile);
-				System.out.println("Account number "+ accNum + " has been closed. Thank you for your business!");
+			String sql = "Select bal from acc_Info where acc_Num = " + accNum;
+			ResultSet rs= null;
+			try {
+				rs= evil.getFromDB(sql);
+				rs.next();
+				finalBal= rs.getDouble("bal");
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			else
+			if(finalBal==0.0)
 			{
-				writer.println(myFile.put(accNum, (bal+sum))); //writes to the file everytime, overriding an account if it is present
-				myAccNames.put(accNum, accName);
+				System.out.println("The account balance is $0.00, would you like to remove your account? (Y/N)");
+				remove= keyboard.next();
+				if(remove.equalsIgnoreCase("y"))
+				{
+					evil.setRemove_Acc(accNum);
+				}
+				
 			}
-		}
-		else
-		{
-			writer.println(myFile.put(accNum, (bal+sum))); //writes to the file everytime, overriding an account if it is present
-			myAccNames.put(accNum, accName);
-		}
-		
-		System.out.println("\nYour starting balance is: "+ format.format(bal) + "\n");
-		System.out.println("Transaction Type   Date of Transaction    Transaction Amount  Additional Charges");
-		System.out.println("--------------------------------------------------------------------------------");
-		for (int k = 0; k< myMap.size();k++)
-		{
-			System.out.println(String.format("%8s",type.get(tMS.get(k)).toUpperCase())+ String.format("%25s",formatter.format(tMS.get(k)))+ String.format("%22s",format.format(myMap.get(tMS.get(k)))) +  String.format("%18s",format.format(charges.get(k))));
-		}
-		System.out.println("");
-		System.out.println("The balance for account number " + accNum + " is: "+ format.format(bal+sum));
-		
-		
-		
-		System.out.println("\nWould you like to enter transactions for a different account? (Y/N)");
-		start=keyboard.next();
-		
-		if(start.equalsIgnoreCase("y"))
-		{
-			choice="y";
-			System.out.println("");
-			
-			//resetting all variables for a new account
-			accNum=0;
-			sum=0;
-			bal=0;
-			myMap.clear();
-			type.clear();
-			tMS.clear();
-			charges.clear();
-		}
-		else
-		{
-			System.out.println("Thank you for working with Evil Corp, see you soon!");
-		}
-		
-		}
-	writer.close(); //closes the PrintWriter
-	
-	Iterator<Entry<Integer, Double>> it = myFile.entrySet().iterator(); //iterates through the hashmap to print
-	Iterator<Entry<Integer, String>> it2= myAccNames.entrySet().iterator();
-	while (it.hasNext())
-	{	
-		Map.Entry<Integer, String> names = it2.next();
-		Map.Entry<Integer, Double> values = it.next(); //gets the keys and values at each point in the hashmap
-		out.write("Account Name: " + names.getValue() + "     Account Number: "+values.getKey() + "      Balance: $" +values.getValue() + "\n"); //writes each line of the hashmap to the file
+			System.out.println("Would you like to enter information for another account? (Y/N)");
+			start=keyboard.next();
 	}
-	out.close(); // closes the BufferedWriter
-	
+		System.out.println("Thank you for banking with Evil Corp :)");
+		Database.conn.close();
 	}
+	
 }
+	// cut code	
+		
